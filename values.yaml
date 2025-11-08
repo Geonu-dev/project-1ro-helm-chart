@@ -1,0 +1,141 @@
+# Default values for navie-project.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+navie-project:
+  fullname: project-1ro-ingress
+  labels: {}
+
+
+##########################################################################
+#공유
+commonName: project-1ro
+service:
+  port: 80
+sellectLabels: project-1ro-app
+
+targetPort:
+  port: 8080
+##########################################################################
+
+
+
+##########################################################################
+# svc
+svc:
+  name: project-1ro-svc
+  type: NodePort
+##########################################################################
+
+
+
+##########################################################################
+#deployment 
+deployName: project-1ro-deploy
+
+deployReplicaCount: 1
+
+image:
+  repository: 584647298977.dkr.ecr.ap-northeast-2.amazonaws.com/1roimg
+  pullPolicy: IfNotPresent #전략에 따라 Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: v1 #임시로 해놓은 v1, latest가 전략에 따라 효과적
+Serviceconnection: allow-secretmanager-fors3upload
+
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 2
+    maxUnavailable: 1
+##########################################################################
+
+
+
+##########################################################################
+
+# HPA
+hpa:
+  enabled: true
+  name: my-hpa
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+
+##########################################################################
+
+
+
+##########################################################################
+#ingress
+ingressName: project-1ro-ingress
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: "project-1ro-eks-alb"
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/stickiness-enabled: "true"
+    alb.ingress.kubernetes.io/target-group-attributes: "stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=300"
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:584647298977:certificate/ee4bb1bd-2edd-40c0-977d-977f561eceac
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'  # HTTP → HTTPS 자동 리다이렉트
+    external-dns.alpha.kubernetes.io/hostname: "1ro.my"
+
+
+  tls: []
+
+##########################################################################
+
+
+
+imagePullSecrets: []
+nameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+spec:
+  selector:
+    app: project-1ro-app
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+httpRoute:
+  enabled: false
+
+secrets:
+  db:
+    name: project-1ro-secret
+    urlKey: DB_URL
+    usernameKey: DB_USERNAME
+    passwordKey: DB_PASSWORD
+  mail:
+    usernameKey: MAIL_USERNAME
+    passwordKey: MAIL_PASSWORD
+  google:
+    mapsApiKey: GOOGLE_MAPS_API_KEY
+  aws:
+    accessKey: AWS_ACCESS_KEY
+    secretKey: AWS_SECRET_KEY

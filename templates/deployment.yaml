@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployName }}
+  labels:
+    app: {{ .Values.sellectLabels }}
+    project: {{ .Values.commonName }}
+  namespace: {{ .Values.commonName }}
+spec:
+  replicas: {{ .Values.deployReplicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.sellectLabels }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.sellectLabels }}
+    spec:
+      # serviceAccountName: {{ .Values.Serviceconnection }}
+      containers:
+        - name: {{ .Values.sellectLabels }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.targetPort.port }}
+            - containerPort: 3306
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: {{ .Values.targetPort.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 10
+          env:
+            # DB Secret
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.name }}
+                  key: DB_URL
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.name }}
+                  key: {{ .Values.secrets.db.usernameKey }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.name }}
+                  key: {{ .Values.secrets.db.passwordKey }}
+            # Mail Secret
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.name }}
+                  key: {{ .Values.secrets.mail.usernameKey }}
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.name }}
+                  key: {{ .Values.secrets.mail.passwordKey }}
+            # Google Maps API Key
+            - name: GOOGLE_MAPS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.name }}
+                  key: {{ .Values.secrets.google.mapsApiKey }}
+            # AWS Secret
+            - name: AWS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.name }}
+                  key: {{ .Values.secrets.aws.accessKey }}
+            - name: AWS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.name }}
+                  key: {{ .Values.secrets.aws.secretKey }}
+
+

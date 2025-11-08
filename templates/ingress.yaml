@@ -1,0 +1,27 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingressName }}
+  namespace: {{ .Values.commonName }}
+  annotations:
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  defaultBackend:
+   service:
+      name: {{ .Values.svc.name }}
+      port:
+        number: {{ .Values.service.port }}
+  rules:
+    - host: "www.1ro.my"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: {{ .Values.svc.name }}
+                port:
+                  number: {{ .Values.service.port }}
+{{- end }}
