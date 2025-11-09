@@ -29,7 +29,7 @@ image:
   repository: 584647298977.dkr.ecr.ap-northeast-2.amazonaws.com/1roimg
   pullPolicy: IfNotPresent #전략에 따라 Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "c9f69" #임시로 해놓은 v1, latest가 전략에 따라 효과적
+  tag: "aac0a" #임시로 해놓은 v1, latest가 전략에 따라 효과적
 Serviceconnection: allow-secretmanager-fors3upload
 strategy:
   type: RollingUpdate
